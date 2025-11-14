@@ -1,22 +1,6 @@
+import { type TeamStanding } from "@/hooks/useStandings";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-export interface TeamStanding {
-  position: number;
-  team: string;
-  played: number;
-  won: number;
-  drawn: number;
-  lost: number;
-  goalsFor: number;
-  goalsAgainst: number;
-  goalDifference: number;
-  yellowCards: number;
-  redCards: number;
-  points: number;
-  manager: string;
-  players: string[];
-}
 
 interface StandingsTableProps {
   standings: TeamStanding[];
@@ -47,7 +31,7 @@ export const StandingsTable = ({ standings, onTeamClick }: StandingsTableProps) 
           <tbody>
             {standings.map((team, index) => (
               <tr
-                key={team.team}
+                key={team.id}
                 onClick={() => onTeamClick?.(team)}
                 className={`
                   border-b border-border transition-all duration-200 cursor-pointer
@@ -60,7 +44,7 @@ export const StandingsTable = ({ standings, onTeamClick }: StandingsTableProps) 
                   <span className="font-bold text-lg text-foreground">{team.position}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="font-semibold text-foreground">{team.team}</div>
+                  <div className="font-semibold text-foreground">{team.teamName}</div>
                   <div className="text-xs text-muted-foreground">{team.manager}</div>
                 </td>
                 <td className="px-2 py-3 text-center text-muted-foreground">{team.played}</td>
@@ -92,11 +76,15 @@ export const StandingsTable = ({ standings, onTeamClick }: StandingsTableProps) 
                 </td>
                 <td className="px-2 py-3 text-center">
                   {team.redCards > 0 && (
-                    <Badge variant="destructive">{team.redCards}</Badge>
+                    <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
+                      {team.redCards}
+                    </Badge>
                   )}
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <span className="font-bold text-xl text-primary">{team.points}</span>
+                  <span className="font-bold text-lg bg-gradient-sport bg-clip-text text-transparent">
+                    {team.points}
+                  </span>
                 </td>
               </tr>
             ))}

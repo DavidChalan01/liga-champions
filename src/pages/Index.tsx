@@ -1,25 +1,47 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useStandings, type TeamStanding } from "@/hooks/useStandings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StandingsTable, TeamStanding } from "@/components/StandingsTable";
+import { Button } from "@/components/ui/button";
+import { StandingsTable } from "@/components/StandingsTable";
 import { TeamDetails } from "@/components/TeamDetails";
-import { mensStandings, womensStandings } from "@/data/mockData";
-import { Trophy } from "lucide-react";
+import { LogIn, Shield, Trophy } from "lucide-react";
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<TeamStanding | null>(null);
+  const { standings: mensStandings, isLoading: mensLoading } = useStandings("men");
+  const { standings: womensStandings, isLoading: womensLoading } = useStandings("women");
+  const { user, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
       {/* Header */}
       <header className="bg-gradient-sport text-primary-foreground shadow-card">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center gap-3">
-            <Trophy className="w-10 h-10" />
-            <h1 className="text-4xl md:text-5xl font-bold">Tabla de Posiciones</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1">
+              <Trophy className="w-10 h-10" />
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold">Tabla de Posiciones</h1>
+                <p className="text-primary-foreground/90">Campeonato 2025 - Estadísticas en Vivo</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {!user ? (
+                <Button onClick={() => navigate("/auth")} variant="outline" className="bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Iniciar Sesión
+                </Button>
+              ) : isAdmin ? (
+                <Button onClick={() => navigate("/admin")} className="bg-white text-primary hover:bg-white/90">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Panel Admin
+                </Button>
+              ) : null}
+            </div>
           </div>
-          <p className="text-center mt-2 text-primary-foreground/90 text-lg">
-            Campeonato 2025 - Estadísticas en Vivo
-          </p>
         </div>
       </header>
 
@@ -48,7 +70,15 @@ const Index = () => {
                 Haz clic en cualquier equipo para ver los detalles completos
               </p>
             </div>
-            <StandingsTable standings={mensStandings} onTeamClick={setSelectedTeam} />
+            {mensLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Cargando...</div>
+            ) : mensStandings.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay equipos registrados aún
+              </div>
+            ) : (
+              <StandingsTable standings={mensStandings} onTeamClick={setSelectedTeam} />
+            )}
           </TabsContent>
 
           <TabsContent value="women" className="mt-0">
@@ -58,7 +88,15 @@ const Index = () => {
                 Haz clic en cualquier equipo para ver los detalles completos
               </p>
             </div>
-            <StandingsTable standings={womensStandings} onTeamClick={setSelectedTeam} />
+            {womensLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Cargando...</div>
+            ) : womensStandings.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay equipos registrados aún
+              </div>
+            ) : (
+              <StandingsTable standings={womensStandings} onTeamClick={setSelectedTeam} />
+            )}
           </TabsContent>
         </Tabs>
 
@@ -94,14 +132,19 @@ const Index = () => {
               <span className="font-semibold text-muted-foreground">TR:</span> Tarjetas Rojas
             </div>
             <div>
-              <span className="font-semibold text-muted-foreground">Pts:</span> Puntos
+              <span className="font-semibold text-muted-foreground">PTS:</span> Puntos
             </div>
           </div>
         </div>
       </main>
 
-      {/* Team Details Modal */}
-      {selectedTeam && <TeamDetails team={selectedTeam} onClose={() => setSelectedTeam(null)} />}
+      {/* Team Details Dialog */}
+      {selectedTeam && (
+        <TeamDetails
+          team={selectedTeam}
+          onClose={() => setSelectedTeam(null)}
+        />
+      )}
     </div>
   );
 };
